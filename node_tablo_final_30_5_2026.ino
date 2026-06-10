@@ -6,7 +6,6 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-// ================= WIFI AP =================
 const char* ssid = "ESP32_CAN_DATA";
 const char* password = "";
 
@@ -14,13 +13,11 @@ WebServer server(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-// ===== PIN (GIỮ NGUYÊN) =====
 #define SDA_PIN 13
 #define SCL_PIN 14
 #define TX_PIN 2
 #define RX_PIN 15
 
-// ===== GLOBAL DATA (GIỮ NGUYÊN) =====
 float global_rpm = 0.0;
 int global_temp = 0;
 float global_fuel = 0.0;
@@ -34,7 +31,6 @@ bool engineDataValid = false;
 int64_t last_t120 = 0; 
 int64_t last_t520 = 0; 
 
-// ================= GIAO DIỆN WEB (RPM x100 - MAX 800) =================
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Modern Dashboard</title>
 <style>
@@ -126,9 +122,7 @@ connectWS();animate();
 </script></body></html>
 )rawliteral";
 
-// --- GỬI WEB (TỐI ƯU: GIỚI HẠN TỐC ĐỘ GỬI) ---
 void broadcastWS() {
-  // Chỉ xử lý nếu có người đang xem web
   if (webSocket.connectedClients() > 0 && millis() - lastWsUpdate > 50) { 
     lastWsUpdate = millis();
     StaticJsonDocument<400> doc;
@@ -148,7 +142,6 @@ void broadcastWS() {
   }
 }
 
-// --- LOGIC CAN GỐC (GIỮ NGUYÊN) ---
 void setupCAN() {
   twai_general_config_t g_config = TWAI_GENERAL_CONFIG_DEFAULT((gpio_num_t)TX_PIN, (gpio_num_t)RX_PIN, TWAI_MODE_NORMAL);
   twai_timing_config_t t_config = TWAI_TIMING_CONFIG_500KBITS();
@@ -187,7 +180,6 @@ void loop() {
   
   twai_message_t msg;
 
-  // --- LOGIC GỬI DUMMY GỐC ---
   if (millis() - lastDummySend > 200) {
     lastDummySend = millis();
     twai_message_t dummy_msg = {0}; 
@@ -196,7 +188,6 @@ void loop() {
     twai_transmit(&dummy_msg, 0); 
   }
 
-  // --- LOGIC NHẬN CAN (GIỮ NGUYÊN 100% SERIAL LOG VÀ TEXT) ---
   while (twai_receive(&msg, 0) == ESP_OK) {
     int64_t now_us = esp_timer_get_time(); 
 
@@ -236,7 +227,6 @@ void loop() {
       Serial.print(global_fuel, 1);
       Serial.print(" %");
 
-      // LOGIC DIFF ARBITRATION DELAY GỐC
       int64_t diff = last_t520 - last_t120;
       if (diff > 0 && diff < 1000) { 
         Serial.print(" | ARBITRATION DELAY: ");
@@ -248,7 +238,6 @@ void loop() {
     broadcastWS(); 
   }
 
-  // --- LOGIC LCD (GIỮ NGUYÊN 100%) ---
   if (millis() - lastLcdUpdate > 500) {
     lastLcdUpdate = millis();
     lcd.setCursor(0, 0);
