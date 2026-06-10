@@ -45,7 +45,6 @@ void installTWAI() {
   Serial.println("TWAI SENDER INSTALLED");
 }
 
-// Hàm kiểm tra trạng thái Bus và Reset nếu cần
 void checkBusStatus() {
   twai_status_info_t status;
   twai_get_status_info(&status);
@@ -94,7 +93,7 @@ void setup() {
 }
 
 void loop() {
-  checkBusStatus(); // KIỂM TRA LỖI TRƯỚC MỖI VÒNG LẶP
+  checkBusStatus(); 
 
   static unsigned long lastTime = 0;
   static unsigned long lastCount = 0;
